@@ -7,9 +7,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('Iniciando varredura de eventos em Marília...');
+    console.log('Iniciando varredura e filtragem de eventos em Marília...');
 
-    // Lista consolidada de eventos extraídos das fontes da cidade
+    // CONFIGURAÇÕES DE TRAVA / LIMITES DE SEGURANÇA
+    const MAX_EVENTOS_POR_DIA = 2; // Máximo 2 eventos na mesma data
+    const MAX_EVENTOS_TOTAL = 6;    // Máximo de eventos retornados para o Manus por execução
+
+    // 1. Lista bruta capturada das fontes
     const eventosCapturados = [
       {
         id: "evt-001",
@@ -61,12 +65,36 @@ export default async function handler(req, res) {
       }
     ];
 
+    // 2. Lógica de Filtragem (Máximo N eventos por dia de realização)
+    const contagemPorDia = {};
+    const eventosFiltrados = [];
+
+    for (const evento of eventosCapturados) {
+      const dataEvento = evento.data;
+      
+      // Inicializa o contador do dia se não existir
+      if (!contagemPorDia[dataEvento]) {
+        contagemPorDia[dataEvento] = 0;
+      }
+
+      // Verifica se o dia e o total acumulado já atingiram o limite
+      if (contagemPorDia[dataEvento] < MAX_EVENTOS_POR_DIA && eventosFiltrados.length < MAX_EVENTOS_TOTAL) {
+        eventosFiltrados.push(evento);
+        contagemPorDia[dataEvento] += 1;
+      }
+    }
+
     return res.status(200).json({
       success: true,
       ultimaAtualizacao: new Date().toISOString(),
       cidade: "Marília-SP",
-      totalEventos: eventosCapturados.length,
-      eventos: eventosCapturados
+      limitesAplicados: {
+        maxPorDia: MAX_EVENTOS_POR_DIA,
+        maxTotalRetornado: MAX_EVENTOS_TOTAL
+      },
+      totalEventosEncontrados: eventosCapturados.length,
+      totalEventosEntregues: eventosFiltrados.length,
+      eventos: eventosFiltrados
     });
 
   } catch (error) {
