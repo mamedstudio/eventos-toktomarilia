@@ -1,0 +1,13 @@
+{
+  "name": "eventos-toktomarilia",
+  "version": "1.0.0",
+  "description": "Scraper e Automação de Eventos para Google Drive e Instagram TokTo Marília",
+  "main": "api/buscar-eventos.js",
+  "type": "module",
+  "scripts": {
+    "start": "node api/buscar-eventos.js"
+  },
+  "dependencies": {
+    "googleapis": "^140.0.0"
+  }
+}
